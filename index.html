@@ -1,0 +1,838 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="user-scalable=no,width=device-width,minimal-ui" />
+    <meta name="description" content="autumnary provides dynamic cloud-based soundtracks for your mobile apps." />
+
+    <meta property="og:title" content="autumnary" />
+    <meta property="og:description" content="autumnary provides dynamic cloud-based soundtracks for your mobile apps." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://autumnary.com/" />
+    <meta property="og:image" content="" />
+
+    <link rel="canonical" href="http://autumnary.com/" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <title>autumnary</title>
+
+    <style>
+      html {
+        height: 100%;
+        background-color: #000;
+        color: #fff;
+        font: 500 16px/1 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        text-shadow: 0 1px 1px rgba(0,0,0,.4);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        margin: 0;
+        height: 100%;
+      }
+
+      img {
+        max-width: 100%;
+      }
+
+      /* both visibility and opacity are animatable properties */
+      .hidden {
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+
+      #wall {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        overflow: hidden;
+        font-size: 0;
+        white-space: nowrap;
+        transition: 1s ease-in-out;
+      }
+
+      /* gradient overlay to make text more legible */
+      #wall::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 30%;
+        background-image: linear-gradient(hsla(0,0%,0%,.2),transparent);
+      }
+
+      .tile {
+        display: inline-block;
+        position: absolute;
+        height: 100%;
+        /*pointer-events: none;*/
+        transition-timing-function: linear;
+      }
+
+      /* animation to center tiles before playing video */
+      .center .tile {
+        transition: 1s ease;
+      }
+
+      .tile-video {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: auto;
+        height: 100%;
+      }
+
+      .header {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        transition: .2s ease-out;
+      }
+
+      .links {
+        float: left;
+        margin: 20px 0 0 40px;
+      }
+
+      .badges {
+        float: right;
+        margin: 20px 40px 0 0;
+      }
+
+      .footer {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+
+      .legal {
+        float: right;
+        margin: 0 40px 20px 0;
+        font-size: 14px;
+      }
+
+      .logo {
+        margin: 0 20px -12px 0;
+        height: 30px;
+      }
+
+      .badge {
+        border: 0;
+        width: 120px;
+        height: 36px;
+      }
+
+      .link {
+        padding: 0 8px;
+        color: inherit;
+        text-decoration: inherit;
+      }
+
+      /* button to play video */
+      .play {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        padding-top: 240px;
+        width: 240px;
+        height: 40px;
+        font-size: 40px;
+        text-align: center;
+        /* videoplayer.png */
+        background-image: url('https://fbcdn-dragon-a.akamaihd.net/hphotos-ak-xpa1/t39.2365-6/10574695_319722128197789_1753285052_n.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: auto 120px;
+        cursor: pointer;
+        opacity: .9;
+        z-index: 2;
+        transition: .2s ease-out;
+      }
+
+      .play:hover {
+        opacity: 1;
+      }
+
+      /* horizontally centered video */
+      .video {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        width: 100%;
+        height: 100%;
+        transition: .5s ease-out;
+      }
+
+      /* video close button */
+      .close {
+        display: block;
+        position: absolute;
+        left: 50%;
+        top: 0;
+        padding: 20px;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        transition: .5s ease-out;
+      }
+
+      .social {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        padding-top: 400px;
+        width: 100%;
+        height: 40px;
+        font-size: 24px;
+        font-weight: 400;
+        text-align: center;
+        transition: .2s ease-out;
+      }
+
+      .share {
+        margin: 0 24px;
+        color: inherit;
+        text-decoration: inherit;
+      }
+
+      .icon {
+        margin-right: 1px;
+        margin-bottom: -4px;
+        border: 0;
+        width: 25px;
+        height: 25px;
+      }
+
+      @media (max-width: 640px) {
+        .badges {
+          display: none;
+        }
+      }
+
+      @media (max-width: 960px) {
+        .links .link {
+          display: none;
+        }
+      }
+
+      /* CUSTOM SHIT */
+      .autumnary-wrapper {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+      }
+
+      .autumnary-wrapper .autumnary-bar {
+        width: 100%;
+        height: 9%;
+        position: absolute;
+        bottom: 0;
+        transform: translate3d(0, 100%, 0);
+        transition: all 0.5s ease;
+      }
+
+      .autumnary-wrapper .autumnary-info {
+        width: 100%;
+        height: 92%;
+        position: absolute;
+        top: 0;
+        overflow: hidden;
+        transform: translate3d(0, -100%, 0);
+        transition: all 0.5s ease;
+      }
+
+      .autumnary-info iframe {
+        border: none;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+      }
+
+      @keyframes slideDown {
+        from {
+          transform: translate3d(0, -100%, 0);
+        }
+
+        to {
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      @keyframes infoClose {
+        from {
+          transform: translate3d(0, 0, 0);
+        }
+
+        to {
+          transform: translate3d(0, -100%, 0);
+        }
+      }
+
+      .slideDown {
+        animation-name: slideDown;
+        animation-duration: 0.5s;
+        animation-fill-mode: forwards;
+        animation-timing-function: ease;
+      }
+
+      .infoClose {
+        animation-name: infoClose;
+        animation-duration: 0.5s;
+        animation-fill-mode: forwards;
+        animation-timing-function: ease;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translate3d(0, 100%, 0);
+        }
+
+        to {
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      @keyframes barClose {
+        from {
+          transform: translate3d(0, 0, 0);
+        }
+
+        to {
+          transform: translate3d(0, 100%, 0);
+        }
+      }
+
+      .slideUp {
+        animation-name: slideUp;
+        animation-duration: 0.5s;
+        animation-fill-mode: forwards;
+        animation-timing-function: ease;
+      }
+
+      .barClose {
+        animation-name: barClose;
+        animation-duration: 0.5s;
+        animation-fill-mode: forwards;
+        animation-timing-function: ease;
+      }
+    </style>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js"></script>
+
+  </head>
+  <body>
+
+    <div id="wall" class="hidden">
+      <div class="tile" id="tile-0">
+        <video class="tile-video" id="tile-0-0" preload="auto" loop="true">
+          <source src="assets/videos/flick-golf.mp4" />
+        </video>
+      </div>
+      <div class="tile" id="tile-1">
+        <video class="tile-video" id="tile-1-0" preload="auto" loop="true">
+          <source src="assets/videos/temple-run.mp4" />
+        </video>
+      </div>
+
+      <div class="tile" id="tile-2">
+        <video class="tile-video" id="tile-2-0" preload="auto" loop="true">
+          <source src="assets/videos/draw-breaker.mp4" />
+        </video>
+      </div>
+
+      <div class="tile" id="tile-3">
+        <video class="tile-video" id="tile-3-0" preload="auto" loop="true">
+          <source src="assets/videos/mario.mp4" />
+        </video>
+
+        <div class="autumnary-wrapper">
+
+          <div class="autumnary-info">
+            <iframe src="http://www.mtv.com/music/"></iframe>
+          </div>
+
+          <div class="autumnary-bar">
+            <img src="assets/kk_bar.jpg" alt="">
+            <audio>
+              <source src="assets/audio/ground-theme.mp3">
+            </audio>
+          </div>
+        </div>
+      </div>
+
+      <div class="tile" id="tile-4">
+        <video class="tile-video" id="tile-4-0" preload="auto" loop="true">
+          <source src="assets/videos/dream-heights.mp4" />
+        </video>
+      </div>
+      
+      <div class="tile" id="tile-5">
+        <video class="tile-video" id="tile-5-0" preload="auto" loop="true">
+          <source src="assets/videos/rocka-bowling.mp4" />
+        </video>
+      </div>
+
+      <div class="tile" id="tile-6">
+        <video class="tile-video" id="tile-6-0" preload="auto" loop="true">
+          <source src="assets/videos/shogun.mp4" />
+        </video>
+      </div>
+
+      <div id="play" class="play" style="display:none;"></div>
+    </div> <!-- END #wall -->
+
+
+
+
+
+
+
+
+
+
+    <div id="header" class="header">
+      <div class="links">
+        <img class="logo" src="assets/autumnary-logo.svg" />
+      </div>
+
+      <div class="badges">
+        <a href="https://twitter.com/autumnaryapp" class="link"><i class="fa fa-twitter fa-2x"></i></a>
+        <a href="http://alphablog.autumnary.com" class="link"><i class="fa fa-tumblr fa-2x"></i></a>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div id="footer" class="footer">
+      <div class="legal">
+        <a href="/thehelp" class="link">Terms</a>
+        <a href="/theprivacy" class="link">Privacy</a>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+    <!--
+    <video id="video" class="video hidden">
+      <source src="https://fbcdn-dragon-a.akamaihd.net/hphotos-ak-xfa1/t39.2365-6/10000000_797125456966575_987360916_n.mp4">
+      <source src="https://fbcdn-dragon-a.akamaihd.net/hphotos-ak-xpf1/t39.2365-6/10000000_762408553810251_15048823_n.webm">
+    </video>
+    
+    <img id="close" class="close hidden" src="https://fbcdn-dragon-a.akamaihd.net/hphotos-ak-xfp1/t39.2365-6/10173506_815017025184366_2013432682_n.png">
+    -->
+
+    <script>
+      /* Client-side vendor prefix CSS preprocessing */
+
+      var TRANSITIONEND = 'transitionend';
+
+      var sheet = document.querySelector('style'),
+          style = sheet.style,
+          text = sheet.textContent;
+
+      if (!('transform' in style) && '-webkit-transform' in style) {
+        Object.defineProperty(CSSStyleDeclaration.prototype, 'transform', {
+          get: function() {
+            return this['-webkit-transform'];
+          },
+          set: function(value) {
+            this['-webkit-transform'] = value;
+          }
+        });
+        text = text.replace(/transform|backface-visibility/g, '-webkit-$&');
+      }
+
+      if (!('transition-duration' in style) && '-webkit-transition-duration' in style) {
+        Object.defineProperty(CSSStyleDeclaration.prototype, 'transitionDuration', {
+          get: function() {
+            return this['-webkit-transition-duration'];
+          },
+          set: function(value) {
+            this['-webkit-transform-duration'] = value;
+          }
+        });
+      }
+
+      if (!('transition-timing-function' in style) && '-webkit-transition-timing-function' in style) {
+        Object.defineProperty(CSSStyleDeclaration.prototype, 'transitionTimingFunction', {
+          get: function() {
+            return this['-webkit-transition-timing-function'];
+          },
+          set: function(value) {
+            this['-webkit-transform-timing-function'] = value;
+          }
+        });
+      }
+
+      if (!('transition' in style) && '-webkit-transition' in style) {
+        text = text.replace(/transition/g, '-webkit-$&');
+        TRANSITIONEND = 'webkitTransitionEnd';
+      }
+
+      if (!('perspective' in style) && '-webkit-perspective' in style)
+        text = text.replace(/perspective/g, '-webkit-$&');
+
+      if (!('animation' in style) && '-webkit-animation' in style)
+        text = text.replace(/animation|keyframes/g, '-webkit-$&');
+
+      if (sheet.textContent != text)
+        sheet.textContent = text;
+
+      /* tile animation */
+
+      var INTERVAL = 8000; /* time for each tile to scroll into view in milliseconds */
+      var WIDTH = 0; /* tile width in pixels */
+      var tiles = document.querySelectorAll('.tile');
+      var videos = document.querySelectorAll('.tile-video');
+      var timers = []; /* list of registered timers */
+      var listeners = []; /* list of registered event listeners */
+      var ticker = 0; /* index of tile that most recently scrolled out of view */
+
+      function setTimer(fn, delay, argument) {
+        timers.push(setTimeout(fn, delay, argument));
+      }
+
+      function clearTimers() {
+        timers.forEach(clearTimeout);
+        timers = [];
+        listeners.forEach(unlisten);
+        listeners = [];
+      }
+
+      function unlisten(listener) {
+        listener.target.removeEventListener(listener.type, listener.callback);
+      }
+
+      /* schedule playback of each tile's videos */
+      function setPlayback(videos, delay) {
+        Array.prototype.forEach.call(videos, function(video, index) {
+          if (!video.loop) {
+            setTimer(function() {
+              video.play();
+              if (index)
+                video.className = 'tile-video';
+            }, delay + (index * 5000));
+          }
+        });
+      }
+
+      function resetPlayback(videos) {
+        Array.prototype.forEach.call(videos, function(video) {
+          if (!video.loop) {
+            video.pause();
+            try {
+              video.currentTime = 0;
+            } catch (e) { }
+
+            if (video.previousElementSibling) {
+              video.className = 'tile-video hidden';
+            }
+          }
+        });
+      }
+
+      function resetTile(tile) {
+        ticker = ++ticker % tiles.length;
+
+        resetPlayback(tile.children[0]);
+
+        tile.style.transitionDuration = '0ms';
+        var transform = WIDTH * tiles.length;
+        var duration = INTERVAL * tiles.length;
+
+        tile.style.transform = 'translate(' + transform + 'px)';
+
+        tile.clientTop;
+
+        tile.style.transitionDuration = duration + 'ms';
+        tile.style.transform = '';
+
+        var random = Math.floor(Math.random() * 100);
+        if (tile.children.length == 1)
+          random *= -1;
+        var delay = (transform - (innerWidth + random)) / WIDTH * INTERVAL;
+        if (delay < 0)
+          delay = 0;
+        setPlayback(tile.children, delay);
+
+        loopTile(tile, duration);
+      }
+
+      /* schedule reset of tile when it scrolls out of view so it loops */
+      function loopTile(tile, duration) {
+        function reset() {
+          var style = getComputedStyle(tile);
+          if ((style['transform'] || style['-webkit-transform']) == 'none') {
+            tile.removeEventListener(TRANSITIONEND, reset);
+            resetTile(tile);
+          }
+        }
+        tile.addEventListener(TRANSITIONEND, reset);
+        listeners.push({
+          target: tile,
+          type: TRANSITIONEND,
+          callback: reset
+        })
+      }
+
+      /*
+        TODO:
+        I used legacy DOM APIs, because I originally targeted IE 8 & 9
+        compatibility for the tile animation.
+        Whenever I set `className`, I'm toggling 'hidden'.
+        I'd like to refactor this to the modern DOM APIs this when I have time.
+      */
+      window.onload = function() {
+        document.getElementById('wall').className = '';
+
+        var previousWidth;
+        var previousHeight;
+
+        (window.onresize = function(event) {
+          if (event && previousWidth == innerWidth && previousHeight == innerHeight)
+            return;
+          previousWidth = innerWidth;
+          previousHeight = innerHeight;
+
+          var width = Math.floor(innerHeight * 9 / 16);
+
+          WIDTH = width;
+          clearTimers();
+          ticker = 0;
+
+          var play = document.getElementById('play');
+          play.className = 'play';
+          document.getElementById('header').className = 'header';
+          document.getElementById('footer').className = 'footer';
+
+          var players = 0;
+          Array.prototype.forEach.call(tiles, function(tile, index) {
+            resetPlayback(tile.children[0]);
+
+            tile.style.width = WIDTH + 'px';
+            tile.style.left = -WIDTH + 'px';
+            tile.style.transitionDuration = '0ms';
+            tile.style.transitionTimingFunction = '';
+            var transform = (WIDTH * (index + 1));
+            tile.style.transform = 'translate(' + transform + 'px)';
+
+            var random = Math.floor(Math.random() * 100);
+            var delay = (transform - (innerWidth + random)) / WIDTH * INTERVAL;
+            if (delay < 0)
+                delay = ++players * 1000;
+            
+            setPlayback(tile.children[0], delay);
+          });
+
+          document.getElementById('wall').clientTop;
+
+          Array.prototype.forEach.call(tiles, function(tile, index) {
+            var duration = INTERVAL * (index + 1);
+            tile.style.transitionDuration = duration + 'ms';
+            tile.style.transform = '';
+            loopTile(tile, duration);
+          });
+        })();
+
+        /*
+          Only Safari properly handles animations in background tabs.
+          The following block works around the problems in other browsers.
+        */
+        var notSafari = !/Safari/.test(navigator.userAgent) || /Chrome/.test(navigator.userAgent);
+        if (notSafari) {
+          var requestAnimationFrame =
+            window.requestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame;
+          if (requestAnimationFrame) {
+            var then;
+            requestAnimationFrame(function request(now) {
+              if (now - then > 1000 &&
+                  document.getElementById('close').className != 'close')
+                onresize();
+              then = now;
+
+              requestAnimationFrame(request);
+            });
+          }
+        }
+
+        document.getElementById('play').onclick = function(event) {
+          if (event.button)
+            return;
+
+          clearTimers();
+
+          var remainder = (innerWidth % (2 * WIDTH)) / 2;
+
+          Array.prototype.forEach.call(tiles, function(tile, index) {
+            Array.prototype.forEach.call(tile.children, function(video) {
+              video.pause();
+            });
+
+            tile.style.transitionDuration = '1s';
+            tile.style.transitionTimingFunction = 'ease';
+            var transform = WIDTH * ((index - ticker + tiles.length) % tiles.length) + remainder;
+
+            tile.transform = transform;
+            tile.style.transform = 'translate(' + transform + 'px)';
+          });
+
+          document.getElementById('play').className = 'play hidden';
+          document.getElementById('social').className = 'social hidden';
+          document.getElementById('header').className = 'header hidden';
+          document.getElementById('footer').className = 'footer hidden';
+
+          setTimer(function() {
+            document.getElementById('close').className = 'close';
+            var video = document.getElementById('video');
+            video.style.display = 'none';
+            video.clientTop;
+            video.style.display = '';
+            video.className = 'video';
+            try {
+              video.play();
+            } catch (e) { }
+          }, 1000);
+        };
+
+        document.onkeydown = document.getElementById('wall').onclick = function(event) {
+          if (event.type == 'keydown' && event.keyCode != 27)
+            return;
+
+          if (event.button)
+            return;
+        };
+      };
+
+      document.getElementById('play').addEventListener('click', function log(event) {
+        if (event.button)
+          return;
+
+        this.removeEventListener(event.type, log);
+        (new Image()).src = 'https://www.facebook.com/about/slingshot/log?video=click';
+      });
+
+      (new Image()).src = 'https://www.facebook.com/about/slingshot/log?data=' + encodeURIComponent(location.pathname);
+  
+
+      // CUSTOM SHIT
+
+      var firstTile = tiles[3];
+
+      var bar = document.querySelector('.autumnary-bar');
+      var info = document.querySelector('.autumnary-info');
+      var audio = document.querySelector('.autumnary-bar audio');
+      // On hover
+      firstTile.addEventListener('mouseenter', function() {
+
+        // play video
+        this.children[0].play();
+
+        // show banner after a moment
+        // add slideUp class to bar
+        // start playing audio
+        setTimeout(function() {
+          bar.classList.add('slideUp');
+          
+          if (audio.paused) {
+            // audio.play();
+          }
+        }, 1000);
+
+        // show webview after another moment
+        // add slideDown class to info
+        setTimeout(function() {
+          info.classList.add('slideDown');
+        }, 2500);
+
+        // make them both go away after a few seconds
+        // remove classes or apply opposite classes?
+
+        setTimeout(function() {
+          bar.classList.remove('slideUp');
+          bar.classList.add('barClose');
+
+          info.classList.remove('slideDown');
+          info.classList.add('infoClose');
+        }, 6000);
+      });
+
+    </script>
+    <!--<![endif]-->
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
